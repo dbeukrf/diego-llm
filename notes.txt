@@ -1,0 +1,17 @@
+PyTorch - Deep Learning Framework
+
+BytePair Encoding
+
+4 Attention Mechanisms:
+1. Simplified self-attention (technique to introduce the broader idea)
+2. Self-attention (wit trainable weights, forms the basis of the mechanism used in LLMs)
+3. Causal attention (type of self-attention used in LLMs that allows a model to consider only previous and current inputs in a sequence, 
+ensuring temporal order during the text generation)
+4. Multi-head attention (extension of self-attention and causal attention that enables the model to simultaneously attend to information from different representation subspaces)
+
+
+Attention weights and context vectors... Chpt 2...
+
+
+Masking, drop out mask
+Note, drop out mask is not used by modern LLMs anymore.
