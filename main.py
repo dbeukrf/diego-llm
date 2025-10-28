@@ -7,15 +7,24 @@ from gptdataset import GPTDatasetV1
 from tokenizer import SimpleTokenizerV2
 from selfattention import CausalAttention, SelfAttention_v2
 from multiheadattention import MultiHeadAttentionWrapper, MultiHeadAttention
+from gptmodel import GPTModel
+from layernorm import LayerNorm
+from feedforward import FeedForward
+from deepneuralnetwork import ExampleDeepNeuralNetwork, print_gradients
 
+import torch.nn as nn
 import os
 import requests
 import re
 import torch
 import urllib.request
+import tiktoken
 
 
 def main():
+
+    ## ********** Chapter 2: Working with Text Data (tokenization & embedding) ********** ##
+
     with open("the-verdict.txt", "r", encoding="utf-8") as f:
         raw_text = f.read()
 
@@ -49,7 +58,7 @@ def main():
     # print(input_embeddings.shape)
     # print(input_embeddings)
 
-    ## ********** Chapter 2: Attention Mechanisms ********** ##
+    ## ********** Chapter 3: Attention Mechanisms ********** ##
 
     inputs = torch.tensor(
         [[0.43, 0.15, 0.89], # Your     (x^1)
@@ -228,9 +237,165 @@ def main():
     mha = MultiHeadAttention(d_in, d_out, context_length, dropout=0.0, num_heads=2)
 
     context_vecs = mha(batch)
-    print(context_vecs)
-    print(context_vecs.shape)
+    # print(context_vecs)
+    # print(context_vecs.shape)
+
+
+
+    ## ********** Chapter 4: LLM Architecture (GPT-2) ********** ##
+
+    GPT_CONFIG_124M = {
+        "vocab_size": 50257, # vocabulary size of the model
+        "context_length": 1024, # context length of the model, note: the larger, the more computationally taxing it will be for your hardware (RAM, VRAM, etc.)
+        "emb_dim": 768, # embedding dimension of the model
+        "n_heads": 12, # number of attention heads in the model
+        "n_layers": 12, # number of layers in the model (# of transformer blocks)
+        "drop_rate": 0.1, # dropout rate of the model
+        "qkv_bias": False # Query, Key, Value bias
+    }
+
+    tokenizer = tiktoken.get_encoding("gpt2")
+    batch = []
+
+    txt1 = "Every effort moves you"
+    txt2 = "Every day holds a"
+
+    batch.append(torch.tensor(tokenizer.encode(txt1)))
+    batch.append(torch.tensor(tokenizer.encode(txt2)))
+    batch = torch.stack(batch, dim=0)
+    # print(batch)
+
     
+    model = GPTModel(cfg = GPT_CONFIG_124M)
+
+    logits = model(batch) # logits is jargon for the last layer outputs 
+    # print(logits)
+    # print(logits.shape)
+    # print(batch.shape)
+
+    
+    batch_example = torch.randn(2, 5) # batch of 2 examples, each with 5 tokens
+
+    layer = nn.Sequential(nn.Linear(5, 6), nn.ReLU()) # nn.Linear is a linear layer (fully connected layer) neural network layer
+    # ReLu is a activation function that is used to introduce non-linearity into the model, you should pair  a linear layer with a non-linear activation function.
+    # Thus the network can learn more complex patterns.
+    
+    out = layer(batch_example)
+    # print(out)
+    # print(out.shape)
+
+    out.shape # (2, 5)
+    mean = out.mean(dim=-1, keepdim=True) # (2,) assuming the last dimension is the feature dimension
+    var = out.var(dim=-1, keepdim=True) # (2,) assuming the last dimension is the feature dimension
+
+    normed = ((out - mean) / torch.sqrt(var)) # the standrad deviation is the square root of the variance
+    normed.var(dim=-1, keepdim=True) # (2,)
+
+
+    ln = LayerNorm(6)
+    outputs_normed = ln(out)
+    # print(outputs_normed)
+    # print(outputs_normed.mean(dim=-1, keepdim=True))
+    # print(outputs_normed.var(dim=-1, keepdim=True)) # (2,)
+
+    ffn = FeedForward(GPT_CONFIG_124M)
+
+
+    x = torch.randn(2, 3, 768)
+    # print(ffn(x).shape)
+
+    layer_sizes = [3, 3, 3, 3, 3, 1]
+    model_without_shortcut = ExampleDeepNeuralNetwork(
+    layer_sizes, use_shortcut=True
+    )
+    sample_input = torch.randn(2, 3)
+    # print_gradients(model_without_shortcut, sample_input)
+
+
+    model = GPTModel(cfg = GPT_CONFIG_124M)
+    sample_input = torch.randint(0, 50257, (2, 1024))
+    # print(model(sample_input).shape)
+
+
+    model = GPTModel(cfg = GPT_CONFIG_124M)
+
+    out = model(batch)
+    # print("Input batch:\n", batch)
+    # print("\nOutput shape:", out.shape)
+    # print(out)
+
+
+    total_params = sum(p.numel() for p in model.parameters())
+    # print(f"Total number of parameters: {total_params:,}")
+
+    # print("Token embedding layer shape:", model.tok_emb.weight.shape)
+    # print("Output layer shape:", model.out_head.weight.shape)      
+
+    total_params_gpt2 =  total_params - sum(p.numel() for p in model.out_head.parameters())
+    # print(f"Number of trainable parameters considering weight tying: {total_params_gpt2:,}")  
+
+    # Calculate the total size in bytes (assuming float32, 4 bytes per parameter)
+    total_size_bytes = total_params * 4
+
+    # Convert to megabytes
+    total_size_mb = total_size_bytes / (1024 * 1024)
+
+    # print(f"Total size of the model: {total_size_mb:.2f} MB")
+
+    start_context = "Hello, I am"
+
+    encoded = tokenizer.encode(start_context)
+    print("encoded: ", encoded)
+
+    encoded_tensor = torch.tensor(encoded).unsqueeze(0)
+    print("encoded_tensor.shape:", encoded_tensor.shape)
+
+    model.eval() # disable dropout
+
+    out = generate_text_simple(
+        model=model,
+        idx=encoded_tensor, 
+        max_new_tokens=6, 
+        context_size=GPT_CONFIG_124M["context_length"]
+    )
+
+    print("Output:", out)
+    print("Output length:", len(out[0]))
+
+    decoded_text = tokenizer.decode(out.squeeze(0).tolist())
+    print("Decoded text:", decoded_text)
+
+
+
+def generate_text_simple(model, idx, max_new_tokens, context_size):
+    # idx is (batch, n_tokens) array of indices in the current context
+    for _ in range(max_new_tokens):
+        
+        # Crop current context if it exceeds the supported context size
+        # E.g., if LLM supports only 5 tokens, and the context size is 10
+        # then only the last 5 tokens are used as context
+        idx_cond = idx[:, -context_size:]
+        
+        # Get the predictions
+        with torch.no_grad():
+            logits = model(idx_cond)
+        
+        # Focus only on the last time step
+        # (batch, n_tokens, vocab_size) becomes (batch, vocab_size)
+        logits = logits[:, -1, :]  
+
+        # Apply softmax to get probabilities
+        probas = torch.softmax(logits, dim=-1)  # (batch, vocab_size)
+
+        # Get the idx of the vocab entry with the highest probability value
+        idx_next = torch.argmax(probas, dim=-1, keepdim=True)  # (batch, 1)
+
+        # Append sampled index to the running sequence
+        idx = torch.cat((idx, idx_next), dim=1)  # (batch, n_tokens+1)
+
+    return idx
+
+
 
 if __name__ == "__main__":
     main()

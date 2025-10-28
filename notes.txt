@@ -2,12 +2,14 @@ PyTorch - Deep Learning Framework
 
 BytePair Encoding
 
+(Core mechanics of the LLM [the car engine])
 4 Attention Mechanisms:
 1. Simplified self-attention (technique to introduce the broader idea)
 2. Self-attention (wit trainable weights, forms the basis of the mechanism used in LLMs)
 3. Causal attention (type of self-attention used in LLMs that allows a model to consider only previous and current inputs in a sequence, 
 ensuring temporal order during the text generation)
-4. Multi-head attention (extension of self-attention and causal attention that enables the model to simultaneously attend to information from different representation subspaces)
+4. Multi-head attention (extension of self-attention and causal attention that enables the model to simultaneously attend to information
+ from different representation subspaces)
 
 
 Attention weights and context vectors... Chpt 2...
@@ -15,3 +17,49 @@ Attention weights and context vectors... Chpt 2...
 
 Masking, drop out mask
 Note, drop out mask is not used by modern LLMs anymore.
+
+
+(The Architecture is the rest of the car)
+
+introduce non-linearity into the model, so you should pair  a linear layer with a non-linear activation function. Thus the network can learn more complex patterns.
+
+Use Layer Nomralization, where it is independent of the sample size.
+
+non activation functions, there are many that you can choose from...
+
+
+Back propagation
+
+Transformer blocks
+
+Weight sharing... Some LLMs do it (LAMA 3.2), and some dont (LAMA 3 and LAMA 3.1)
+If you share the weight, there are fewer parameters in the model because these are really large matrices 
+
+output of the last linear layer is called logits.
+
+
+GPT2-small (the 124M configuration we already implemented):
+    - "emb_dim" = 768
+    - "n_layers" = 12
+    - "n_heads" = 12
+    - GPT2-medium:
+
+GPT2-medium:
+    - "emb_dim" = 1024
+    - "n_layers" = 24
+    - "n_heads" = 16
+
+GPT2-large:
+    - "emb_dim" = 1280
+    - "n_layers" = 36
+    - "n_heads" = 20
+
+GPT2-XL:
+    - "emb_dim" = 1600
+    - "n_layers" = 48
+    - "n_heads" = 25
+
+
+
+
+
