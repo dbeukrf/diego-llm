@@ -21,3 +21,8 @@ class SimpleTokenizerV2:
         # Replace spaces before the specified punctuations
         text = re.sub(r'\s+([,.:;?!"()\'])', r'\1', text)
         return text
+
+    @staticmethod
+    def token_ids_to_text(token_ids, tokenizer):
+        flat = token_ids.squeeze(0) # remove batch dimension
+        return tokenizer.decode(flat.tolist())

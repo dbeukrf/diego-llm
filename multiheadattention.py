@@ -44,13 +44,19 @@ class MultiHeadAttention(nn.Module):
         # compute scaled dot-product attention (self-attention) with a causal mask
         attn_scores = queries @ keys.transpose(2, 3) # shape: (b, num_heads, num_tokens, num_tokens)
 
+        # Scale attention scores (this is the scaled dot-product attention)
+        attn_scores = attn_scores / keys.shape[-1]**0.5
+
         # original mask truncated to the number of tokens and converted to boolean
         mask_bool = self.mask.bool()[:num_tokens, :num_tokens]
 
-        # use the mask to fill attention scores
+        # use the mask to fill attention scores (mask future tokens)
         attn_scores.masked_fill_(~mask_bool, -torch.inf)
 
-        attn_weights = torch.softmax(attn_scores / keys.shape[-1]**0.5, dim=-1)
+        # Clamp attention scores to prevent overflow/underflow in softmax
+        attn_scores = torch.clamp(attn_scores, min=-1e9, max=1e9)
+
+        attn_weights = torch.softmax(attn_scores, dim=-1)
         attn_weights = self.dropout(attn_weights)
 
         # shape: (b, num_tokens, num_heads, heads_dim)

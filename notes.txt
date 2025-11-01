@@ -62,4 +62,29 @@ GPT2-XL:
 
 
 
+cross-entropy loss in deep learning (cross-entropy = negative average log probability)
+In deep learning, instead of maximizing the average log-probability, it's a standard convention to minimize the negative average log-probability value;
+in our case, instead of maximizing -10.7722 so that it approaches 0,
+in deep learning, we would minimize 10.7722 so that it approaches 0
 
+
+
+perplexity: measured as the exponential of the loss (training loss/validation loss)-> essentially tells us how unsure the model is for the number of words.
+
+
+in LLM training, one epoch is one complete pass over a training set.
+Iterate over batches in each training epoch (the # of batches is determined by the training set size divided by the size of each batch).
+
+For each iteration (usual steps used for training deep neural networks in PyTorch):
+- Reset loss gradients from previous batch iteration
+- calculate loss on current batch
+- backward pass to calculate loss gradients
+- update model weights using loss gradients
+- print training and validation set losses
+
+
+normally people train models for 1 or 1.5 epochs max (since its 15 trillion tokens, thousands of GPUs, lots of $$$, and months of time)
+in this case, the verdict short story is a small text file so to get better results, the more epochs, the better results.
+
+
+top-k is the an integer value that grabs the top K (n) highest logits. (e.g. k = 3, focus on the 3 most likely tokens or logits.) 
