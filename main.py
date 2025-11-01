@@ -375,6 +375,8 @@ def main():
     '''
     ## ********** Chapter 5: Pretraining on Unlabeled Data ********** ##
 
+    '''
+
     file_path = "the-verdict.txt"
     with open(file_path, "r", encoding="utf-8") as file:
         text_data = file.read()
@@ -551,6 +553,7 @@ def main():
     # print("Training loss:", train_loss)
     # print("Validation loss:", val_loss)
 
+    '''
 
     ## TRAINING THE MODEL ##
     '''
@@ -724,7 +727,7 @@ def main():
     '''
 
 
-
+    
 
     ## Loading pretrained weights from OpenAI ##
 
@@ -755,12 +758,12 @@ def main():
 
     GPT_CONFIG_124M = {
         "vocab_size": 50257,
-        "context_length": 256,
+        "context_length": 1024,
         "emb_dim": 768,
         "n_heads": 12,
         "n_layers": 12,
         "drop_rate": 0.1,
-        "qkv_bias": False
+        "qkv_bias": True
     }
 
     model_configs = {
@@ -769,6 +772,10 @@ def main():
         "gpt2-large (774M)": {"emb_dim": 1280, "n_layers": 36, "n_heads": 20},
         "gpt2-xl (1558M)": {"emb_dim": 1600, "n_layers": 48, "n_heads": 25},
     }
+
+    tokenizer = tiktoken.get_encoding("gpt2")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
     # Copy the base configuration and update with specific model settings
     model_name = "gpt2-small (124M)"  # Example model name
@@ -811,33 +818,33 @@ def main():
 
 
 def load_weights_into_gpt(gpt, params):
-    gpt.pos_emb.weight = assign(gpt.pos_emb.weight, params['wpe'])
-    gpt.tok_emb.weight = assign(gpt.tok_emb.weight, params['wte'])
-    
+    gpt.pos_emb.weight = assign(gpt.pos_emb.weight, params["wpe"])
+    gpt.tok_emb.weight = assign(gpt.tok_emb.weight, params["wte"])
+
     for b in range(len(params["blocks"])):
         q_w, k_w, v_w = np.split(
             (params["blocks"][b]["attn"]["c_attn"])["w"], 3, axis=-1)
-        gpt.trf_blocks[b].att.W_q.weight = assign(
-            gpt.trf_blocks[b].att.W_q.weight, q_w.T)
-        gpt.trf_blocks[b].att.W_k.weight = assign(
-            gpt.trf_blocks[b].att.W_k.weight, k_w.T)
-        gpt.trf_blocks[b].att.W_v.weight = assign(
-            gpt.trf_blocks[b].att.W_v.weight, v_w.T)
+        gpt.trf_blocks[b].att.W_query.weight = assign(
+            gpt.trf_blocks[b].att.W_query.weight, q_w.T)
+        gpt.trf_blocks[b].att.W_key.weight = assign(
+            gpt.trf_blocks[b].att.W_key.weight, k_w.T)
+        gpt.trf_blocks[b].att.W_value.weight = assign(
+            gpt.trf_blocks[b].att.W_value.weight, v_w.T)
 
         q_b, k_b, v_b = np.split(
             (params["blocks"][b]["attn"]["c_attn"])["b"], 3, axis=-1)
-        gpt.trf_blocks[b].att.W_q.bias = assign(
-            gpt.trf_blocks[b].att.W_q.bias, q_b)
-        gpt.trf_blocks[b].att.W_k.bias = assign(
-            gpt.trf_blocks[b].att.W_k.bias, k_b)
-        gpt.trf_blocks[b].att.W_v.bias = assign(
-            gpt.trf_blocks[b].att.W_v.bias, v_b)
+        gpt.trf_blocks[b].att.W_query.bias = assign(
+            gpt.trf_blocks[b].att.W_query.bias, q_b)
+        gpt.trf_blocks[b].att.W_key.bias = assign(
+            gpt.trf_blocks[b].att.W_key.bias, k_b)
+        gpt.trf_blocks[b].att.W_value.bias = assign(
+            gpt.trf_blocks[b].att.W_value.bias, v_b)
 
-        gpt.trf_blocks[b].att.output_proj.weight = assign(
-            gpt.trf_blocks[b].att.output_proj.weight, 
+        gpt.trf_blocks[b].att.out_proj.weight = assign(
+            gpt.trf_blocks[b].att.out_proj.weight,
             params["blocks"][b]["attn"]["c_proj"]["w"].T)
-        gpt.trf_blocks[b].att.output_proj.bias = assign(
-            gpt.trf_blocks[b].att.output_proj.bias, 
+        gpt.trf_blocks[b].att.out_proj.bias = assign(
+            gpt.trf_blocks[b].att.out_proj.bias,
             params["blocks"][b]["attn"]["c_proj"]["b"])
 
         gpt.trf_blocks[b].ff.layers[0].weight = assign(

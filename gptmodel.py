@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 from multiheadattention import MultiHeadAttention
 from feedforward import FeedForward
-# from layernorm import LayerNorm
-# from transformerblock import TransformerBlock
 
 class GPTModel(nn.Module):
 
