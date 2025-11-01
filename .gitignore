@@ -8,3 +8,10 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Large model files
+*.pth
+gpt2-small-*.pth
+model.pth
+gpt2/**/*.ckpt*
+gpt2/**/model.ckpt*
