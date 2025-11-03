@@ -15,3 +15,7 @@ gpt2-small-*.pth
 model.pth
 gpt2/**/*.ckpt*
 gpt2/**/model.ckpt*
+
+# Spam data
+sms_spam_collection.zip
+sms_spam_collection/

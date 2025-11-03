@@ -87,4 +87,48 @@ normally people train models for 1 or 1.5 epochs max (since its 15 trillion toke
 in this case, the verdict short story is a small text file so to get better results, the more epochs, the better results.
 
 
-top-k is the an integer value that grabs the top K (n) highest logits. (e.g. k = 3, focus on the 3 most likely tokens or logits.) 
+top-k is the an integer value that grabs the top K (n) highest logits. (e.g. k = 3, focus on the 3 most likely tokens or logits.)
+
+
+
+when creating data loaders...
+The text messages may have different lengths, now if we want to combine multiple training examples in a batch, we have to either:
+a. truncate all messages to the length of the shortest message in the dataset or batch
+b. pad all messages to the length of the longest message in the dataset or batch
+
+
+there are different tunings:
+1. Classification fine-tuning
+2. Instruction fine-tuning (personal assistant)
+
+
+there are output nodes, change them to the number of desired outputs you are looking for (e.g. is spam, is not spam = 2 output nodes)
+
+
+3 different accuracies:
+1. Test Accuracy
+2. Validation Accuracy
+3. Training Accuracy
+
+
+unfreezing means making the model or transformer or something trainable.
+
+
+[Stage 1] Building an LLM:
+1. Data Preparation & Sampling
+2. Attention Mechanism
+3. LLM Architecture
+(4. Pretraining)
+
+[Stage 2] Foundation Model:
+5. Training Loop
+6. Model Evaluation
+7. Load Pretrained Weights
+(8. Fine-Tuning)
+
+[Stage 3] Classifier & Personal Assitant (Fine-tuning)
+
+
+
+
+supervised data means we have a labeled data set.
