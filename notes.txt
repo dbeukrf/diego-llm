@@ -132,3 +132,42 @@ unfreezing means making the model or transformer or something trainable.
 
 
 supervised data means we have a labeled data set.
+
+instruction finetuning is often referred to as "supervised instruction finetuning" because it involves training a model on a dataset
+where the input-output pairs are explicitly provided.
+
+
+Different style templates:
+1. Alpaca prompt style template 
+## instructions:
+...
+## input:
+...
+## response:
+...
+
+2. Phi-3  prompt style template (microsoft)
+<|user|>
+...
+<|assistant|>
+...
+
+
+nowadays each llm has its own style.
+
+
+
+pretraining -> instruction finetuning -> alignment/preference tuning (use RLHF or DPO)
+
+RLHF = Reinforcement Learning with Human Feedback 
+DPO = Direct Preference Optimisation
+
+Orginal GPT model and Lama2 used RLHF
+but later LLMs used DPO since its easier to implement
+thus Lama3 is based on DPO.
+
+
+
+
+
+
