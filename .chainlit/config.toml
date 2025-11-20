@@ -1,0 +1,54 @@
+[project]
+# Whether to enable telemetry (default: true). No personal data is collected.
+enable_telemetry = true
+
+# List of environment variables to be provided by each user to use the app.
+user_env = []
+
+# Duration (in seconds) during which the session is saved when the connection is lost
+session_timeout = 3600
+
+# Enable third parties caching (e.g LangChain cache)
+cache = false
+
+# Authorized origins
+allow_origins = ["*"]
+
+[features]
+# Process and display HTML in messages. This can be a security risk. Only enable if you trust the messages.
+unsafe_allow_html = false
+
+# Authorize users to spontaneously upload files with messages.
+[features.spontaneous_file_upload]
+enabled = true
+accept = ["*/*"]
+max_files = 10
+max_size_mb = 10
+
+# Process and display mathematical expressions.
+[features.math]
+enabled = false
+
+# Authorize users to use the prompt playground.
+[features.prompt_playground]
+enabled = false
+
+# Allow user to use speech to text.
+[features.speech_to_text]
+enabled = false
+
+[UI]
+# Name of the app and chatbot.
+name = "Diego LLM Chatbot"
+
+# Show the prompt playground.
+default_collapse_content = true
+
+# Hide the chain of thought details from the user in the UI.
+default_expand_messages = true
+
+# Hide the prompt playground from the user in the UI.
+hide_cot = false
+
+[meta]
+generated_by = "1.0.0"
